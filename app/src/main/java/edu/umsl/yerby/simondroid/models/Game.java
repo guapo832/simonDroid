@@ -1,5 +1,6 @@
 package edu.umsl.yerby.simondroid.models;
 
+import android.media.AudioTrack;
 import android.os.Handler;
 import android.os.Message;
 
@@ -14,7 +15,8 @@ public class Game {
 
     public enum status {
     SHOWSEQUENCE,
-    LISTENING
+    LISTENING,
+        LOST
 }
    public enum buttonState {
         PRESSED,
@@ -25,7 +27,7 @@ public class Game {
     public status gameStatus;
     private int[] mColorIDs;
     private List<Integer> mRoundSequence;
-    private int mSequencePosition,mCurrentRound,mScore;
+    private int mSequencePosition,mCurrentRound,mHighScore;
     private Listener mListener;
     private ButtonHandler mButtonHandler;
     private buttonState mButtonState;
@@ -33,9 +35,11 @@ public class Game {
     private static final int WAITSHOW = 1;
     private static final String USER_TURN_TOAST  = "Your turn";
     private static final String SIMON_TURN_TOST = "Simon Says...";
-
-    private static final int DELAY=1000;
-    private static final int LONG_DELAY = 5000;
+    private static final String YOU_LOST = "You lost in Round %d";
+    private static final String ROUND_TEXT = "Round\n%d";
+    private static final String RESTART_TEXT = "Click to Restart";
+    private static final int DELAY=250;
+    private static final int LONG_DELAY = 3500;
     
 
     /***
@@ -45,6 +49,7 @@ public class Game {
     public Game(int[] colorIDs) {
         this.mColorIDs = colorIDs.clone();
         mSequencePosition = 0;
+        mHighScore = 0;
         mRoundSequence = new ArrayList<Integer>();
     }
 
@@ -56,6 +61,8 @@ public class Game {
         void buttonNormal(int buttonID);
         void setButtonState(int buttonID,boolean active);
         void sendTextToast(String msg);
+        void setHighScore(int score);
+        void setMainButtonText(String txt);
     }
 
     //add random color to sequence
@@ -97,11 +104,12 @@ public class Game {
         gameStatus = status.SHOWSEQUENCE;
         mButtonState = buttonState.RELEASED;
         mListener.sendTextToast(SIMON_TURN_TOST);
+        mListener.setMainButtonText(String.format(ROUND_TEXT,mCurrentRound));
         mButtonHandler.postDelayed(new Runnable() {
             public void run() {
                 Game.this.update();
             }
-        }, LONG_DELAY);
+        }, LONG_DELAY ); //LONG DELAY Wasn't enough
     }
 
     class ButtonHandler extends Handler{
@@ -140,16 +148,11 @@ public class Game {
                           mListener.buttonNormal(mRoundSequence.get(mSequencePosition));
                           mSequencePosition ++;
                           mButtonState = buttonState.RELEASED;
-
-
                           break;
                       case RELEASED:
                           mListener.buttonLit(mRoundSequence.get(mSequencePosition));
                           mButtonState = buttonState.PRESSED;
-
-
                           break;
-
                   }
 
                   if(mSequencePosition>=mRoundSequence.size()){
@@ -159,10 +162,12 @@ public class Game {
                   }
 
                   mButtonHandler.sleep(LONG_DELAY);
+                  break;
               case LISTENING:
                   mButtonHandler.postDelayed(new Runnable() {
                       public void run() {
                           mListener.sendTextToast(USER_TURN_TOAST);
+                          mListener.setMainButtonText(String.format(ROUND_TEXT,mCurrentRound));
                       }
                   }, DELAY);
 
@@ -179,7 +184,9 @@ public class Game {
        if(btnID == mRoundSequence.get(mSequencePosition)) {
           mSequencePosition++;
            if(mSequencePosition == mRoundSequence.size()){
+               if(mCurrentRound>mHighScore) mHighScore = mCurrentRound;
                mCurrentRound++;
+               mListener.setHighScore(mHighScore);
                addRound();
            }
        } else {
@@ -188,7 +195,14 @@ public class Game {
     }
 
     private void endGame() {
-        mListener.sendTextToast("You lost in Round" + mCurrentRound);
+        mListener.sendTextToast(String.format(YOU_LOST,mCurrentRound));
+        mCurrentRound=1;
+        this.gameStatus = status.LOST;
+        mListener.setMainButtonText(RESTART_TEXT);
+
     }
+
+
+
 
 }

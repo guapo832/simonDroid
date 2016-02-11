@@ -3,4 +3,12 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="blueNotLit">#000099</color>
+    <color name="blueLit">#3333ff</color>
+    <color name="yellowLit">#ffff00</color>
+    <color name="yellowNotLit">#c1c110</color>
+    <color name="greenLit">#1aff1a</color>
+    <color name="greenNotLit">#008000</color>
+    <color name="redLit">#ff0000</color>
+    <color name="redNotLit">#CC0000</color>
 </resources>
