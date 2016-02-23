@@ -10,12 +10,46 @@
 
     <TextView
       android:id="@+id/highscore_text_view"
-      android:layout_width="wrap_content"
+      android:layout_width="170dp"
       android:layout_height="wrap_content"
       android:padding="24dp"
       android:textSize="@android:dimen/app_icon_size"
       android:gravity="center"
-      android:singleLine="false" />
+      android:singleLine="false"
+        android:layout_gravity="center_horizontal" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.07"
+        android:id="@+id/rdoDifficulty">
+
+        <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Difficulty_Easy"
+        android:id="@+id/rdoDifficulty_Easy"
+        android:layout_weight="0.07"
+        android:checked="true"/>
+
+        <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rdoDifficulty_Medium"
+        android:text="@string/Difficulty_Medium"
+         />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rdoDifficulty_Hard"
+            android:layout_weight="0.07"
+            android:text="@string/Difficulty_Hard"
+            />
+    </RadioGroup>
+
+
 
     <Button
         android:layout_width="172dp"

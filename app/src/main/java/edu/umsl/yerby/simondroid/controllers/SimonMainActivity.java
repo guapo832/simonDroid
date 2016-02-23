@@ -3,9 +3,12 @@ package edu.umsl.yerby.simondroid.controllers;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,8 +55,9 @@ public class SimonMainActivity extends AppCompatActivity {
 
 
     public void startGame_OnClick( View view ) {
-       Intent gameBoardIntent = new Intent(SimonMainActivity.this,GameBoardActivity.class);
-       startActivityForResult(gameBoardIntent,REQUEST_CODE_GAME_BOARD);
+        RadioGroup rdoGrp = (RadioGroup)findViewById(R.id.rdoDifficulty);
+       Intent intent = GameBoardActivity.setIntent(SimonMainActivity.this,rdoGrp.getCheckedRadioButtonId());
+       startActivityForResult(intent, REQUEST_CODE_GAME_BOARD);
 
     }
 

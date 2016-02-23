@@ -1,65 +1,114 @@
 package edu.umsl.yerby.simondroid.controllers;
 
-import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import edu.umsl.yerby.simondroid.R;
 import edu.umsl.yerby.simondroid.models.Game;
 
 public class GameBoardActivity extends AppCompatActivity implements Game.Listener, View.OnTouchListener{
 
     private static final String GAME_HIGH_SCORE = "edu.umsl.yerby.simondroid.gameboard.highscore";
+    private static final String DIFFICULTY_LEVEL = "edu.umsl.gyerby.simon.difficulty";
     private static final int BLUE = 1;
     private static final int RED = 4;
     private static final int YELLOW = 2;
     private static final int GREEN = 3;
+
     private SoundPool soundPool;
     private int speakerStreamID;
     private int[] soundIDs = new int[5];
     Button greenBtn,yellowBtn,redBtn,blueBtn;
-private MediaPlayer mPlayer;
+
     Game mGameModel;
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private int difficulty;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-       SoundPool.Builder builder = new SoundPool.Builder();
-        builder.setMaxStreams(4);
-soundPool = builder.build();
-
-        soundIDs[BLUE] = soundPool.load(this,R.raw.blue_long,1);
-        soundIDs[GREEN] = soundPool.load(this,R.raw.green_long,1);
-        soundIDs[YELLOW] = soundPool.load(this,R.raw.yellow_long,1);
-        soundIDs[RED] = soundPool.load(this, R.raw.red_long, 1);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_board);
+        setupSound();
+        mGameModel = createNewGame();
+        setupButtons();
+        if(savedInstanceState!=null){
+            mGameModel.loadGameState(savedInstanceState);
+            if(mGameModel.gameStatus == Game.status.SHOWSEQUENCE){
+                mGameModel.updateDelayed();
+            }
+        } else {
+            mGameModel.startGame();
+        }
+
+        setDelayText();
+    }
+
+    private Game createNewGame() {
         mGameModel = new Game(new int[]{R.id.buttonblue,R.id.buttongreen,R.id.buttonred,R.id.buttonyellow});
         mGameModel.addListener(this);
-        mGameModel.startGame();
+        Intent intent = getIntent();
+        difficulty = intent.getIntExtra(DIFFICULTY_LEVEL, R.id.rdoDifficulty_Medium);
+        mGameModel.setDifficulty(getDifficulty(difficulty));
+        return mGameModel;
+    }
 
+
+
+    private void setupButtons() {
         blueBtn =(Button) findViewById(R.id.buttonblue);
         greenBtn =(Button) findViewById(R.id.buttongreen);
         yellowBtn =(Button) findViewById(R.id.buttonyellow);
         redBtn =(Button) findViewById(R.id.buttonred);
-
         blueBtn.setOnTouchListener(this);
         redBtn.setOnTouchListener(this);
         greenBtn.setOnTouchListener(this);
         yellowBtn.setOnTouchListener(this);
+    }
 
-
+    private void setupSound() {
+        SoundPool.Builder builder = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            builder = new SoundPool.Builder();
+            builder.setMaxStreams(4);
+            soundPool = builder.build();
+            soundIDs[BLUE] = soundPool.load(this, R.raw.blue_long, 1);
+            soundIDs[GREEN] = soundPool.load(this,R.raw.green_long,1);
+            soundIDs[YELLOW] = soundPool.load(this,R.raw.yellow_long,1);
+            soundIDs[RED] = soundPool.load(this, R.raw.red_long, 1);
+        }
 
 
     }
 
+    private Game.difficultyType getDifficulty(int difficulty) {
+        switch(difficulty){
+            case R.id.rdoDifficulty_Easy:
+                return Game.difficultyType.EASY;
+            case R.id.rdoDifficulty_Medium:
+                return Game.difficultyType.MEDIUM;
+            case R.id.rdoDifficulty_Hard:
+                return Game.difficultyType.HARD;
+        }
+        return Game.difficultyType.MEDIUM;
+    }
+
+    private void setDelayText() {
+        TextView tv = (TextView) findViewById(R.id.delay_text_view);
+        tv.setText(getString(R.string.delay_text_view,mGameModel.delay));
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        mGameModel.saveGameState(state);
+
+    }
 
     @Override
     public void buttonLit(int buttonID) {
@@ -110,7 +159,9 @@ soundPool = builder.build();
 
     public void mainSimonButtonClicked(View view){
         if(mGameModel.gameStatus == Game.status.LOST){
+            mGameModel.setDifficulty(getDifficulty(difficulty));
             mGameModel.startGame();
+            setDelayText();
         }
     }
 
@@ -138,6 +189,12 @@ soundPool = builder.build();
         setResult(RESULT_OK, data);
     }
 
+    public static Intent setIntent(Context context, int difficultyLevel){
+        Intent gameBoardIntent = new Intent(context,GameBoardActivity.class);
+        gameBoardIntent.putExtra(DIFFICULTY_LEVEL,difficultyLevel);
+        return gameBoardIntent;
+    }
+
     public static int getHighScore(Intent data) {
         return data.getIntExtra(GAME_HIGH_SCORE,0);
     }
@@ -156,6 +213,7 @@ soundPool = builder.build();
                 if(status == Game.status.LISTENING){
                     //   generateTone(440, 9000);
                     mGameModel.checkColorClicked(buttonId);
+                   setDelayText();
                 }
                 break;
         }

@@ -104,5 +104,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="5dp"
-        android:layout_gravity="left|top"></RelativeLayout>
+        android:layout_gravity="left|top">
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="164dp"
+        android:layout_height="37dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Small Text"
+        android:id="@+id/delay_text_view"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center_horizontal|top" />
 </FrameLayout>
